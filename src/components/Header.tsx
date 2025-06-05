@@ -1,4 +1,3 @@
-
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +12,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-          CryptoShop
+          KryptoShop
         </Link>
         
         <nav className="hidden md:flex items-center space-x-8">
@@ -23,9 +22,9 @@ const Header = () => {
           <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">
             About
           </a>
-          <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">
+          <Link to="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
             Contact
-          </a>
+          </Link>
         </nav>
 
         <Link to="/checkout">

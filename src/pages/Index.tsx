@@ -1,22 +1,42 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
-import { products, categories } from '../data/products';
+import { categories } from '../data/products';
+import { Textarea } from '@/components/ui/textarea';
+import { getProducts } from '../services/api';
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filteredProducts = products.filter(product => {
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await getProducts();
+        setProducts(data);
+        setError('');
+      } catch (err) {
+        setError('Failed to load products.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = Array.isArray(products) ? products.filter((product) => {
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
-  });
+  }) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -33,9 +53,27 @@ const Index = () => {
             The future of shopping is here.
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <span className="bg-white/20 px-4 py-2 rounded-full">🔥 Bitcoin</span>
-            <span className="bg-white/20 px-4 py-2 rounded-full">⚡ Ethereum</span>
-            <span className="bg-white/20 px-4 py-2 rounded-full">🚀 Litecoin</span>
+            <span className="bg-white/20 px-4 py-2 rounded-full flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 256 417" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M127.9 0L124.6 11.2V277.6L127.9 280.9L255.8 208.2L127.9 0Z" fill="#343434"/><path d="M127.9 0L0 208.2L127.9 280.9V150.1V0Z" fill="#8C8C8C"/><path d="M127.9 304.7L125.9 307.2V415.2L127.9 420.1L255.9 232.2L127.9 304.7Z" fill="#3C3C3B"/><path d="M127.9 420.1V304.7L0 232.2L127.9 420.1Z" fill="#8C8C8C"/><path d="M127.9 280.9L255.8 208.2L127.9 150.1V280.9Z" fill="#141414"/><path d="M0 208.2L127.9 280.9V150.1L0 208.2Z" fill="#393939"/></svg>
+              Ethereum
+            </span>
+            <span className="bg-white/20 px-4 py-2 rounded-full flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 2500 2500" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="1250" cy="1250" r="1250" fill="#F3BA2F"/><path d="M1250 500L1750 1250L1250 2000L750 1250L1250 500Z" fill="#fff"/></svg>
+              Binance Smart Chain
+            </span>
+            <span className="bg-white/20 px-4 py-2 rounded-full flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 38 33" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 0L37.5 32.5H0.5L19 0Z" fill="#8247E5"/></svg>
+              Polygon
+            </span>
+            <span className="bg-white/20 px-4 py-2 rounded-full flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g>
+                  <circle cx="128" cy="128" r="128" fill="#F60000"/>
+                  <path d="M44 44L212 64L128 212L44 44ZM128 212L212 64L128 128L128 212ZM128 128L44 44L128 64L128 128Z" fill="#fff"/>
+                </g>
+              </svg>
+              Tron
+            </span>
           </div>
         </div>
       </section>
@@ -71,13 +109,23 @@ const Index = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">Loading products...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">{error}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
 
-        {filteredProducts.length === 0 && (
+        {(!loading && !error && filteredProducts.length === 0) && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
           </div>
