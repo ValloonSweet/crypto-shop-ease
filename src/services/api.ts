@@ -17,7 +17,7 @@ export const getProducts = async () => {
   throw new Error('Failed to fetch products');
 };
 
-export const getProductById = async (id) => {
+export const getProductById = async (id: string | number) => {
   const response = await api.get(`/products/${id}`);
   if (
     response.status === 200 &&
@@ -28,4 +28,16 @@ export const getProductById = async (id) => {
     return response.data.product;
   }
   throw new Error('Product not found');
+};
+
+export const buyProduct = async (
+  productId: string | number,
+  tokenName: string,
+  network: string
+) => {
+  const response = await api.post(`/buy/${productId}`, {
+    tokenName,
+    network,
+  });
+  return response.data;
 }; 

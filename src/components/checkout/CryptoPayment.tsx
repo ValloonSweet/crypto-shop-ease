@@ -1,9 +1,11 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '../../contexts/CartContext';
+import { buyProduct } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 interface NetworkOption {
   id: string;
@@ -42,6 +44,8 @@ const CryptoPayment = ({
   onCheckout
 }: CryptoPaymentProps) => {
   const { state } = useCart();
+  const [paying, setPaying] = useState(false);
+  const navigate = useNavigate();
 
   const networkOptions: NetworkOption[] = [
     { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', icon: '🔷' },
@@ -51,8 +55,8 @@ const CryptoPayment = ({
   ];
 
   const tokenOptions: TokenOption[] = [
-    { id: 'usdt', name: 'Tether USD', symbol: 'USDT', rate: 1.0 },
-    { id: 'usdc', name: 'USD Coin', symbol: 'USDC', rate: 1.0 }
+    { id: 'BTT', name: 'BTT', symbol: 'BTT', rate: 1.0 },
+    { id: 'USDC', name: 'USDC', symbol: 'USDC', rate: 1.0 }
   ];
 
   const selectedNetworkData = networkOptions.find(network => network.id === selectedNetwork);
@@ -142,11 +146,26 @@ const CryptoPayment = ({
         </div>
 
         <Button
-          onClick={onCheckout}
+          onClick={async () => {
+            setPaying(true);
+            try {
+              const productId = state.items[0]?.id;
+              const data = await buyProduct(productId, selectedToken, selectedNetwork);
+              if (data && data.status && data.dep_req && data.dep_req.payment_link) {
+                window.location.href = data.dep_req.payment_link;
+              } else {
+                alert(data.msg || 'Payment initiation failed.');
+              }
+            } catch (err) {
+              alert('Failed to initiate payment.');
+            } finally {
+              setPaying(false);
+            }
+          }}
           className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-lg py-6"
-          disabled={!email || !shippingAddress.fullName || !shippingAddress.address}
+          disabled={!email || !shippingAddress.fullName || !shippingAddress.address || paying}
         >
-          Pay {tokenAmount} {selectedTokenData?.symbol} on {selectedNetworkData?.name}
+          {paying ? 'Processing...' : `Pay ${tokenAmount} ${selectedTokenData?.symbol} on ${selectedNetworkData?.name}`}
         </Button>
 
         <p className="text-xs text-gray-500 text-center">
