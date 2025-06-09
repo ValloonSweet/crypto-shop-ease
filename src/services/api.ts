@@ -40,4 +40,17 @@ export const buyProduct = async (
     network,
   });
   return response.data;
+};
+
+export const getOrders = async () => {
+  const response = await api.get('/orders');
+  if (
+    response.status === 200 &&
+    response.data &&
+    response.data.status &&
+    Array.isArray(response.data.orders)
+  ) {
+    return response.data.orders;
+  }
+  throw new Error('Failed to fetch orders');
 }; 
